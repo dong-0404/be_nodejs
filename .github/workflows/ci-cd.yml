@@ -1,33 +1,65 @@
-name: Deploy Node.js app to Server
+name: CI/CD Pipeline for Node.js
 
 on:
   push:
     branches:
-      - main  # Đảm bảo bạn chỉ deploy khi push vào nhánh main
+      - main  # Chạy pipeline khi có code push vào branch main
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout code từ repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Cài đặt Node.js và các dependencies
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '22'  # Thay phiên bản Node.js bạn dùng
+
+    - name: Install dependencies
+      run: npm install
+
+    # Chạy test
+    # - name: Run tests
+    #   run: npm test
+
   deploy:
     runs-on: ubuntu-latest
+    needs: build
+
     steps:
-      # Checkout code từ repository
-      - name: Checkout code
-        uses: actions/checkout@v2
+    # Checkout code từ repository
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      # Cài đặt SSH key và thêm máy chủ vào known_hosts
-      - name: Set up SSH key and known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          # Thêm máy chủ vào known_hosts để tránh lỗi "Host key verification failed"
-          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+    - name: Check environment variables
+      run: |
+        echo "HOST: ${{ secrets.HOST }}"
+        echo "USERNAME: ${{ secrets.USERNAME }}"
 
-      # Kiểm tra kết nối SSH (tùy chọn, để kiểm tra SSH có hoạt động không)
-      - name: Test SSH connection
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -v ${{ secrets.USERNAME }}@${{ secrets.HOST }} "echo 'SSH connection successful!'"
+    # Copy code lên server qua SSH
+    - name: Deploy to server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        HOST: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+      run: |
+        # Kiểm tra giá trị SSH_PRIVATE_KEY (không in trực tiếp vào log để bảo mật)
+        echo "Setting up private key..."
+        echo "${SSH_PRIVATE_KEY}" > private_key.pem
+        chmod 600 private_key.pem
 
-      # Deploy mã nguồn lên server sử dụng rsync
-      - name: Deploy to Server using rsync
-        run: |
-          rsync -avz -e "ssh -i ~/.ssh/id_rsa" ./ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/${{ secrets.USERNAME }}/my-node-app
+        # In ra các giá trị kiểm tra
+        echo "Deploying to $USERNAME@$HOST"
+
+        # Sử dụng rsync để triển khai ứng dụng
+        rsync -avz -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" ./ ${{ env.USERNAME }}@${{ env.HOST }}:/home/${{ env.USERNAME }}/my-node-app
+
+    - name: Restart PM2
+      run: |
+        # Khởi động lại PM2 trên server
+        ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ env.USERNAME }}@${{ env.HOST }} "cd /home/${{ env.USERNAME }}/my-node-app && npm install && pm2 restart index.js"
