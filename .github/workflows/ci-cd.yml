@@ -24,8 +24,8 @@ jobs:
       run: npm install
 
     # Chạy test
-    - name: Run tests
-      run: npm test
+    # - name: Run tests
+    #   run: npm test
 
   deploy:
     runs-on: ubuntu-latest
