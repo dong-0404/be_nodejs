@@ -48,4 +48,4 @@ jobs:
    
     - name: SSH into Server and Deploy
       run: |
-        ssh -o StrictHostKeyChecking=no monkey@20.211.155.19 "cd /home/monkey/be_nodejs && git pull && npm install && pm2 restart index.js"
+        ssh -o StrictHostKeyChecking=no monkey@20.211.155.19 "cd /home/monkey/be_nodejs && git pull && bash start.sh"
