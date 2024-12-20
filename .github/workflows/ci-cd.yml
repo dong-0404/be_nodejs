@@ -40,23 +40,11 @@ jobs:
       run: |
         echo "HOST: 20.211.155.19"
         echo "USERNAME: ${{ secrets.USERNAME }}"
-
-    # Copy code lên server qua SSH
-    - name: Deploy to server
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        HOST: 20.211.155.19
-        USERNAME: monkey
+        - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+   
+    - name: SSH into Server and Deploy
       run: |
-        # Kiểm tra giá trị SSH_PRIVATE_KEY (không in trực tiếp vào log để bảo mật)
-        echo "Setting up private key..."
-        echo "${SSH_PRIVATE_KEY}" > private_key.pem
-        chmod 600 private_key.pem
-
-        # Sử dụng rsync để triển khai ứng dụng
-        rsync -avz -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" ./monkey@20.211.155.19:/home/monkey/my-node-app
-
-    - name: Restart PM2
-      run: |
-        # Khởi động lại PM2 trên server
-        ssh -i private_key.pem -o StrictHostKeyChecking=no monkey@ "cd /home/monkey/my-node-app && npm install && pm2 restart index.js"
+        ssh -o StrictHostKeyChecking=no username@your-server-ip "cd /home/monkey/my-node-app && npm install && pm2 restart index.js"
