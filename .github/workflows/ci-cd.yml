@@ -40,9 +40,10 @@ jobs:
       run: |
         echo "HOST: 20.211.155.19"
         echo "USERNAME: ${{ secrets.USERNAME }}"
-        - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
    
     - name: SSH into Server and Deploy
