@@ -38,28 +38,25 @@ jobs:
 
     - name: Check environment variables
       run: |
-        echo "HOST: ${{ secrets.HOST }}"
+        echo "HOST: 20.211.155.19"
         echo "USERNAME: ${{ secrets.USERNAME }}"
 
     # Copy code lên server qua SSH
     - name: Deploy to server
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        HOST: ${{ secrets.HOST }}
-        USERNAME: ${{ secrets.USERNAME }}
+        HOST: 20.211.155.19
+        USERNAME: monkey
       run: |
         # Kiểm tra giá trị SSH_PRIVATE_KEY (không in trực tiếp vào log để bảo mật)
         echo "Setting up private key..."
         echo "${SSH_PRIVATE_KEY}" > private_key.pem
         chmod 600 private_key.pem
 
-        # In ra các giá trị kiểm tra
-        echo "Deploying to $USERNAME@$HOST"
-
         # Sử dụng rsync để triển khai ứng dụng
-        rsync -avz -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" ./ ${{ env.USERNAME }}@${{ env.HOST }}:/home/${{ env.USERNAME }}/my-node-app
+        rsync -avz -e "ssh -i private_key.pem -o StrictHostKeyChecking=no" ./monkey@20.211.155.19:/home/monkey/my-node-app
 
     - name: Restart PM2
       run: |
         # Khởi động lại PM2 trên server
-        ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ env.USERNAME }}@${{ env.HOST }} "cd /home/${{ env.USERNAME }}/my-node-app && npm install && pm2 restart index.js"
+        ssh -i private_key.pem -o StrictHostKeyChecking=no monkey@ "cd /home/monkey/my-node-app && npm install && pm2 restart index.js"
