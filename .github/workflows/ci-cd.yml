@@ -1,0 +1,68 @@
+name: CI/CD Pipeline for Node.js
+
+on:
+  push:
+    branches:
+      - main   
+  pull_request:
+    branches:
+      - main     
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  
+    steps:
+      # 1. Checkout mã nguồn
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # 2. Cài đặt Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '22'  # Chọn version Node.js phù hợp (16 là ví dụ)
+
+      # 3. Cài đặt các dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Chạy kiểm tra (tests)
+      - name: Run tests
+        run: npm test   # Chạy tests nếu bạn có thư mục hoặc file test
+
+      # 5. Build (nếu có)
+      # - name: Build project
+      #   run: npm run build  # Nếu có script build trong package.json
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build    # Chạy deploy sau khi build thành công
+    if: github.ref == 'refs/heads/main'  # Chỉ deploy khi có thay đổi trên nhánh main
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # 2. Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      # 3. Cài đặt các dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Deploy lên VM hoặc Server (sử dụng SSH, SCP, hoặc PM2)
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VM_IP }} << 'EOF'
+            cd /home/monkey/my-node-app
+            git pull origin main   # Kéo mã mới từ GitHub
+            npm install           # Cài đặt lại dependencies
+            pm2 restart index     # Restart ứng dụng Node.js bằng PM2
+          EOF
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}  # SSH user (có thể lưu trong GitHub Secrets)
+          VM_IP: ${{ secrets.VM_IP }}        # IP của VM (cũng có thể lưu trong GitHub Secrets)
