@@ -58,6 +58,7 @@ const scheduleTelegramJob = () => {
     cron.schedule('*/1 15 * * *', () => {
         const message = 'Tôi đang test tính năng em Tuyết thông cảm nhé kakakaka';
         sendMessage(message);
+        console.log('test message');
       });
 };
 
