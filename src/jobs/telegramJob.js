@@ -76,13 +76,13 @@ const scheduleTelegramJob = () => {
     });
 
     // Mỗi phút vào lúc 3h chiều (test)
-    cron.schedule('*/1 16 * * *', () => {
-        const message = 'Tôi đang test tính năng em Tuyết thông cảm nhé kakakaka';
-        sendMessage(message);
-    }, {
-        scheduled: true,
-        timezone: "Asia/Ho_Chi_Minh"
-    });
+    // cron.schedule('*/1 16 * * *', () => {
+    //     const message = 'Tôi đang test tính năng em Tuyết thông cảm nhé kakakaka';
+    //     sendMessage(message);
+    // }, {
+    //     scheduled: true,
+    //     timezone: "Asia/Ho_Chi_Minh"
+    // });
 };
 
 module.exports = scheduleTelegramJob;
