@@ -2,7 +2,7 @@ const { Sequelize } = require('sequelize');
 const config = require('./config/config');
 
 // Chọn cấu hình môi trường (ví dụ: 'development')
-const env = 'test';
+const env = 'development';
 const dbConfig = config[env];
 
 // Tạo kết nối Sequelize

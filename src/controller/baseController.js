@@ -19,5 +19,10 @@ class BaseController {
         }
         next();
     }
+
+    handleError(res, error) {
+        console.error(error); 
+        return this.convertToJson(res, 500, { message: error.message || 'Internal Server Error' });
+    }
 }
 module.exports = BaseController;

@@ -1,4 +1,5 @@
-const User = require('../models/user');
+// const User = require('../models/user');
+const UserService = require('../services/UserService');
 const BaseController = require('./baseController');
 
 class UserController extends BaseController {
@@ -8,20 +9,20 @@ class UserController extends BaseController {
 
     async getAllUsers(req, res) {
         try {
-            const users = [
-                {
-                    name: 'John Doe',
-                    email: 'dongtx04@gmail.com',
-                },
-                {
-                    name: 'Jane Doe',
-                    email: 'aaa@gmail.com',
-                },
-            ];
-
+            const users = await UserService.getAllUsers();
             super.convertToJson(res, 200, users);
         } catch (error) {
-            super.convertToJson(res, 500, { message: 'Server Error', error: error.message });
+            super.handleError(res, error);
+        }
+    }
+
+    async getUserById(req, res) {
+        try {
+            const id = req.params.id;
+            const user = await UserService.getUserById(id);
+            super.convertToJson(res, 200, user);
+        } catch (error) {
+            super.handleError(res, error);
         }
     }
 }
