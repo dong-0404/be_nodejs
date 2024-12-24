@@ -18,7 +18,7 @@
 # Development mode
 - npm run dev
 # Production mode
--npm run start
+- npm run start
 
 # Database Management
 
