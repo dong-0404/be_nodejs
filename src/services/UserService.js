@@ -5,7 +5,6 @@ class UserService {
     }
 
     async getAllUsers() {
-        console.log('2441241241412');
         return await UserRepository.getAllUsers();
     }
 

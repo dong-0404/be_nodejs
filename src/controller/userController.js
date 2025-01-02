@@ -10,9 +10,9 @@ class UserController extends BaseController {
     async getAllUsers(req, res) {
         try {
             const users = await UserService.getAllUsers();
-            super.convertToJson(res, 200, users);
+            return super.convertToJson(res, 200, users);
         } catch (error) {
-            super.handleError(res, error);
+            return super.handleError(res, error);
         }
     }
 
