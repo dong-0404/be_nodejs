@@ -11,7 +11,7 @@ class FileService {
     async uploadFile(file) {
         try {
             const objectName = Date.now() + "_" + file.originalname;
-            
+
             // Upload to MinIO
             await minioClient.putObject(
                 this.bucketName,
@@ -20,11 +20,7 @@ class FileService {
             );
 
             // Get file URL
-            const fileUrl = await minioClient.presignedGetObject(
-                this.bucketName, 
-                objectName, 
-                24*60*60
-            );
+            const fileUrl = await this.getFileUrl(this.bucketName, objectName);
 
             return {
                 filename: objectName,
@@ -33,6 +29,17 @@ class FileService {
             };
         } catch (error) {
             throw new Error(`Upload failed: ${error.message}`);
+        }
+    }
+
+    async getFileUrl(bucket, filename) {
+        try {
+            const fileUrl = await minioClient.presignedGetObject(bucket, filename, 1*60);
+            
+            return fileUrl.replace('minio', 'localhost').split('?')[0];
+        } catch (error) {
+            console.log('Get file URL error:', error);
+            throw new Error(`Get file URL failed: ${error.message}`);
         }
     }
 }

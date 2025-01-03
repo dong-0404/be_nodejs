@@ -12,6 +12,7 @@ const upload = multer({
 });
 
 router.post('/upload', upload.single('file'), fileController.uploadFile);
+router.get('/getFile/:bucket/:fileName', fileController.getFileUrl);
 // router.get('/list', FileController.listFiles.bind(FileController));
 
 module.exports = router;

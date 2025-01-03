@@ -1,4 +1,3 @@
-// controllers/fileController.js
 const fileService = require('../services/FileService');
 
 class FileController {
@@ -19,6 +18,24 @@ class FileController {
             });
         } catch (error) {
             console.error('Upload error:', error);
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+
+    async getFileUrl(req, res) {
+        try {
+            const { bucket, fileName } = req.params;
+            const fileUrl = await fileService.getFileUrl(bucket, fileName);
+            
+            res.json({
+                success: true,
+                data: fileUrl
+            });
+        } catch (error) {
+            console.error('Get file URL error:', error);
             res.status(500).json({
                 success: false,
                 message: error.message
