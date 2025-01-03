@@ -1,6 +1,11 @@
 const fileService = require('../services/FileService');
 
-class FileController {
+class FileController extends BaseController {
+
+    constructor() {
+        super();
+    }
+
     async uploadFile(req, res) {
         try {
             if (!req.file) {
@@ -17,7 +22,6 @@ class FileController {
                 data: result
             });
         } catch (error) {
-            console.error('Upload error:', error);
             res.status(500).json({
                 success: false,
                 message: error.message
@@ -35,7 +39,6 @@ class FileController {
                 data: fileUrl
             });
         } catch (error) {
-            console.error('Get file URL error:', error);
             res.status(500).json({
                 success: false,
                 message: error.message
