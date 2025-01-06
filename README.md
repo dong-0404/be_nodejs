@@ -20,6 +20,13 @@
 # Production mode
 - npm run start
 
+# Start project with Docker
+1. Build and start the services
+- docker-compose up --build
+2. Stop Docker Compose
+- docker-compose down
+
+
 # Database Management
 
 ## Migrations
