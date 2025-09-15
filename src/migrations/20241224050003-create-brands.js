@@ -2,35 +2,32 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Users', {
+    await queryInterface.createTable('Brands', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      email: {
+      name: {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true
       },
-      password_hash: {
+      slug: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
       },
-      full_name: {
-        type: Sequelize.STRING,
-        allowNull: false
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: true
       },
-      phone: {
+      logoUrl: {
         type: Sequelize.STRING,
         allowNull: true
       },
-      avatar_url: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      is_active: {
+      isActive: {
         type: Sequelize.BOOLEAN,
         defaultValue: true
       },
@@ -44,10 +41,11 @@ module.exports = {
       }
     });
 
-    // Add index for email
-    await queryInterface.addIndex('Users', ['email']);
+    // Add indexes
+    await queryInterface.addIndex('Brands', ['slug']);
+    await queryInterface.addIndex('Brands', ['isActive']);
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Users');
+    await queryInterface.dropTable('Brands');
   }
 };

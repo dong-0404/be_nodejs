@@ -13,6 +13,7 @@ const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.p
 
 async function testConnection() {
   try {
+    console.log(dbConfig);
     await sequelize.authenticate(); 
     console.log(`Kết nối tới cơ sở dữ liệu "${dbConfig.database}" thành công!`);
   } catch (error) {

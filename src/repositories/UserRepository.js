@@ -1,48 +1,75 @@
-const db = require('../models');
+const IRepository = require('../interfaces/repository.interface');
 
-class UserRepository {
-    constructor() {
+class UserRepository extends IRepository {
+    constructor(db) {
+        super();
+        this.db = db;
+        this.model = this.db.User; // Chỉ định model
     }
     
+    // Implement generic interface methods
+    async getAll() {
+        return await this.model.findAll();
+    }
+
+    async getById(id) {
+        return await this.model.findByPk(id);
+    }
+
+    async create(data) {
+        return await this.model.create(data);
+    }
+
+    async update(id, data) {
+        return await this.model.update(data, {
+            where: { id: id }
+        });
+    }
+
+    async delete(id) {
+        const deletedCount = await this.model.destroy({
+            where: { id: id }
+        });
+        return deletedCount > 0;
+    }
+
+    async findBy(conditions) {
+        return await this.model.findAll({
+            where: conditions
+        });
+    }
+
+    async count() {
+        return await this.model.count();
+    }
+
+    // User-specific methods
+    async getUserByEmail(email) {
+        return await this.model.findOne({
+            where: { email: email }
+        });
+    }
+
+    // Backward compatibility methods
     async getAllUsers() {
-        try {
-            const users = await db.User.findAll();
-            return users;
-        } catch (error) {
-            throw error;
-        }
+        return await this.getAll();
     }
 
     async getUserById(id) {
-        try {
-            const user = await db.User.findByPk(id);
-            return user;
-        } catch (error) {
-            throw error;
-        }
+        return await this.getById(id);
     }
 
     async createUser(user) {
-        try {
-            const newUser = await db.User.create(user);
-            return newUser;
-        } catch (error) {
-            throw error;
-        }
+        return await this.create(user);
     }
 
     async updateUser(user) {
-        try {
-            const updatedUser = await db.User.update(user, {
-                where: {
-                    id: user.id,
-                },
-            });
-            return updatedUser;
-        } catch (error) {
-            throw error;
-        }
+        return await this.update(user.id, user);
     }
 
+    async deleteUser(id) {
+        return await this.delete(id);
+    }
 }
-module.exports = new UserRepository();
+
+module.exports = UserRepository;

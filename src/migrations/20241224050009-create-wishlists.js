@@ -2,35 +2,29 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Users', {
+    await queryInterface.createTable('Wishlists', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      email: {
-        type: Sequelize.STRING,
+      userId: {
+        type: Sequelize.INTEGER,
         allowNull: false,
-        unique: true
+        references: {
+          model: 'Users',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
-      password_hash: {
+      name: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true,
+        defaultValue: 'My Wishlist'
       },
-      full_name: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
-      phone: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      avatar_url: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      is_active: {
+      isDefault: {
         type: Sequelize.BOOLEAN,
         defaultValue: true
       },
@@ -44,10 +38,11 @@ module.exports = {
       }
     });
 
-    // Add index for email
-    await queryInterface.addIndex('Users', ['email']);
+    // Add indexes
+    await queryInterface.addIndex('Wishlists', ['userId']);
+    await queryInterface.addIndex('Wishlists', ['userId', 'isDefault']);
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Users');
+    await queryInterface.dropTable('Wishlists');
   }
 };

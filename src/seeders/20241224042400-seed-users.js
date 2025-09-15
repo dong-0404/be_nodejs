@@ -1,38 +1,54 @@
 'use strict';
 const { faker } = require('@faker-js/faker');
+const bcrypt = require('bcrypt');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    /**
-     * Add seed commands here.
-     *
-     * Example:
-     * await queryInterface.bulkInsert('People', [{
-     *   name: 'John Doe',
-     *   isBetaMember: false
-     * }], {});
-    */
     const users = [];
-    for (let i = 0; i < 10; i++) {
+    
+    // Create admin user
+    const adminPassword = await bcrypt.hash('admin123', 10);
+    users.push({
+      email: 'admin@shoestore.com',
+      password_hash: adminPassword,
+      full_name: 'Admin User',
+      phone: '+84901234567',
+      is_active: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    // Create test customer
+    const customerPassword = await bcrypt.hash('customer123', 10);
+    users.push({
+      email: 'customer@test.com',
+      password_hash: customerPassword,
+      full_name: 'Test Customer',
+      phone: '+84901234568',
+      is_active: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    // Create random users
+    for (let i = 0; i < 8; i++) {
+      const password = await bcrypt.hash('password123', 10);
       users.push({
-        name: faker.name.fullName(),
         email: faker.internet.email(),
-        password: faker.internet.password(),
+        password_hash: password,
+        full_name: faker.person.fullName(),
+        phone: faker.phone.number(),
+        is_active: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
     }
+    
     await queryInterface.bulkInsert('Users', users, {});
   },
 
   async down(queryInterface, Sequelize) {
-      /**
-       * Add commands to revert seed here.
-       *
-       * Example:
-       * await queryInterface.bulkDelete('People', null, {});
-       */
-      await queryInterface.bulkDelete('Users', null, {});
-    }
-  };
+    await queryInterface.bulkDelete('Users', null, {});
+  }
+};

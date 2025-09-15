@@ -1,5 +1,5 @@
 const fileService = require('../services/FileService');
-const BaseController = require('./baseController');
+const BaseController = require('./base.controller');
 
 class FileController extends BaseController {
 

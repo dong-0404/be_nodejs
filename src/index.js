@@ -1,7 +1,7 @@
 const express = require('express');
-const userRouter = require('./routers/userRouter');
-const fileRouter = require('./routers/fileRouter');
-const scheduleTelegramJob = require('./jobs/telegramJob');
+const userRouter = require('./routes/user.routes');
+const fileRouter = require('./routes/file.routes');
+const scheduleTelegramJob = require('./schedulers/telegram.scheduler');
 const app = express();
 const port = 3000;
 
