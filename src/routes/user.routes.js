@@ -3,7 +3,7 @@ const router = express.Router();
 
 const userController = require('../controllers/user.controller');
 
-// User routes
+// User routes - không cần bind nữa vì đã auto-bind trong controller
 router.get('/users', userController.getAllUsers);
 router.get('/users/:id', userController.getUserById);
 router.get('/users/email/:email', userController.getUserByEmail);

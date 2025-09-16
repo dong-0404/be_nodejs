@@ -45,13 +45,7 @@ module.exports = (sequelize, DataTypes) => {
         as: 'wishlists'
       });
 
-      // Product has many cart items through variants
-      Product.hasMany(models.CartItem, {
-        through: models.ProductVariant,
-        foreignKey: 'productId',
-        as: 'cartItems'
-      });
-
+      // Access CartItems via ProductVariant using nested includes when querying
       // Product has many order items
       Product.hasMany(models.OrderItem, {
         foreignKey: 'productId',
