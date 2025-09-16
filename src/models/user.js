@@ -2,6 +2,8 @@
 const {
   Model
 } = require('sequelize');
+const bcrypt = require('bcrypt');
+
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -59,6 +61,33 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'notifications'
       });
+
+      // User has many cart items
+      User.hasMany(models.CartItem, {
+        foreignKey: 'userId',
+        as: 'cartItems'
+      });
+    }
+
+    // Instance methods
+    async validatePassword(password) {
+      return await bcrypt.compare(password, this.password_hash);
+    }
+
+    toJSON() {
+      const values = Object.assign({}, this.get());
+      delete values.password_hash;
+      return values;
+    }
+
+    // Static methods
+    static async hashPassword(password) {
+      const saltRounds = 12;
+      return await bcrypt.hash(password, saltRounds);
+    }
+
+    static async findByEmail(email) {
+      return await this.findOne({ where: { email } });
     }
   }
   User.init({
@@ -89,12 +118,28 @@ module.exports = (sequelize, DataTypes) => {
     is_active: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
+    },
+    role: {
+      type: DataTypes.ENUM('user', 'admin'),
+      defaultValue: 'user'
     }
   }, {
     sequelize,
     modelName: 'User',
     tableName: 'Users',
-    timestamps: true
+    timestamps: true,
+    hooks: {
+      beforeCreate: async (user) => {
+        if (user.password_hash) {
+          user.password_hash = await User.hashPassword(user.password_hash);
+        }
+      },
+      beforeUpdate: async (user) => {
+        if (user.changed('password_hash')) {
+          user.password_hash = await User.hashPassword(user.password_hash);
+        }
+      }
+    }
   });
   return User;
 };

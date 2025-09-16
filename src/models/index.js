@@ -1,5 +1,8 @@
 'use strict';
 
+// Load environment variables first
+require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
+
 const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');

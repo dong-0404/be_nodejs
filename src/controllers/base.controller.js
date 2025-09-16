@@ -17,7 +17,7 @@ class BaseController {
 
     convertToJson(res, statusCode, data) {
         return res.status(statusCode).json({
-            status: statusCode === 200 ? 'success' : 'error',
+            status: statusCode === 200 || statusCode === 201 ? 'success' : 'error',
             data,
         });
     }

@@ -1,6 +1,7 @@
 const db = require('../models');
 const UserRepository = require('../repositories/UserRepository');
 const UserService = require('../services/UserService');
+const AuthService = require('../services/AuthService');
 
 class DIContainer {
     constructor() {
@@ -35,5 +36,6 @@ const container = new DIContainer();
 container.register('db', () => db);
 container.register('userRepository', (container) => new UserRepository(container.resolve('db')));
 container.register('userService', (container) => new UserService(container.resolve('userRepository')));
+container.register('authService', (container) => new AuthService(container.resolve('userRepository')));
 
 module.exports = container;

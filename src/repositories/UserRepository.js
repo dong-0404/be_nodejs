@@ -21,9 +21,10 @@ class UserRepository extends IRepository {
     }
 
     async update(id, data) {
-        return await this.model.update(data, {
+        await this.model.update(data, {
             where: { id: id }
         });
+        return await this.model.findByPk(id);
     }
 
     async delete(id) {
@@ -48,6 +49,16 @@ class UserRepository extends IRepository {
         return await this.model.findOne({
             where: { email: email }
         });
+    }
+
+    async findByEmail(email) {
+        return await this.model.findOne({
+            where: { email: email }
+        });
+    }
+
+    async findById(id) {
+        return await this.model.findByPk(id);
     }
 
     // Backward compatibility methods
