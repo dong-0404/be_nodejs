@@ -4,7 +4,7 @@ const authRouter = require('./routes/auth.routes');
 const fileRouter = require('./routes/file.routes');
 const scheduleTelegramJob = require('./schedulers/telegram.scheduler');
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
@@ -21,5 +21,5 @@ app.get('/', (req, res) => {
 scheduleTelegramJob();
 
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Local access: http://localhost:${port}`);
 });

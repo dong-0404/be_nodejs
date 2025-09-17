@@ -12,9 +12,7 @@ class AuthUtils {
                 .withMessage('Please provide a valid email'),
             body('password')
                 .isLength({ min: 6 })
-                .withMessage('Password must be at least 6 characters long')
-                .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-                .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
+                .withMessage('Password must be at least 6 characters long'),
             body('full_name')
                 .trim()
                 .isLength({ min: 2, max: 50 })
@@ -22,9 +20,12 @@ class AuthUtils {
                 .matches(/^[a-zA-Z\s]+$/)
                 .withMessage('Full name can only contain letters and spaces'),
             body('phone')
-                .optional()
-                .isMobilePhone('vi-VN')
-                .withMessage('Please provide a valid Vietnamese phone number')
+                .optional({ nullable: true, checkFalsy: true })
+                .custom((value) => {
+                    if (!value || value.trim() === '') return true; // Allow empty phone
+                    return /^(\+84|0)[0-9]{9,10}$/.test(value); // Simple Vietnamese phone regex
+                })
+                .withMessage('Please provide a valid Vietnamese phone number (e.g., 0123456789 or +84123456789)')
         ];
     }
 
@@ -54,8 +55,6 @@ class AuthUtils {
             body('newPassword')
                 .isLength({ min: 6 })
                 .withMessage('New password must be at least 6 characters long')
-                .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-                .withMessage('New password must contain at least one lowercase letter, one uppercase letter, and one number')
         ];
     }
 
@@ -72,9 +71,12 @@ class AuthUtils {
                 .matches(/^[a-zA-Z\s]+$/)
                 .withMessage('Full name can only contain letters and spaces'),
             body('phone')
-                .optional()
-                .isMobilePhone('vi-VN')
-                .withMessage('Please provide a valid Vietnamese phone number'),
+                .optional({ nullable: true, checkFalsy: true })
+                .custom((value) => {
+                    if (!value || value.trim() === '') return true; // Allow empty phone
+                    return /^(\+84|0)[0-9]{9,10}$/.test(value); // Simple Vietnamese phone regex
+                })
+                .withMessage('Please provide a valid Vietnamese phone number (e.g., 0123456789 or +84123456789)'),
             body('avatar_url')
                 .optional()
                 .isURL()
