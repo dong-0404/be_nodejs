@@ -2,12 +2,13 @@ require('dotenv').config({ path: '/Users/shin/Documents/DemoProject/be_app/.env'
 
 module.exports = {
   "development": {
-    "username": process.env.DB_USER,
-    "password": process.env.DB_PASSWORD || null,
-    "database": process.env.DB_NAME,
-    "host": process.env.DB_HOST,
-    "dialect": "mysql",
-    "dialectOptions": {
+    host: process.env.MYSQL_HOST,        
+    port: parseInt(process.env.MYSQL_PORT) || 3306,
+    database: process.env.MYSQL_DATABASE, 
+    username: process.env.MYSQL_USER,     
+    password: process.env.MYSQL_PASSWORD, 
+    dialect: 'mysql',
+    dialectOptions: {
       ssl: {
         require: true,
         rejectUnauthorized: false
