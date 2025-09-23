@@ -10,7 +10,7 @@ class UserController extends BaseController {
     async getAllUsers(req, res) {
         try {
             const users = await this.userService.getAllUsers();
-            return super.convertToJson(res, 200, users);
+            return super.convertToJson(res, 200, { users });
         } catch (error) {
             return super.handleError(res, error);
         }
@@ -20,7 +20,7 @@ class UserController extends BaseController {
         try {
             const id = req.params.id;
             const user = await this.userService.getUserById(id);
-            return super.convertToJson(res, 200, user);
+            return super.convertToJson(res, 200, { user });
         } catch (error) {
             return super.handleError(res, error);
         }
@@ -30,7 +30,7 @@ class UserController extends BaseController {
         try {
             const userData = req.body;
             const user = await this.userService.createUser(userData);
-            return super.convertToJson(res, 201, user);
+            return super.convertToJson(res, 201, { user });
         } catch (error) {
             return super.handleError(res, error);
         }
@@ -41,7 +41,7 @@ class UserController extends BaseController {
             const id = req.params.id;
             const userData = req.body;
             const user = await this.userService.updateUser(id, userData);
-            return super.convertToJson(res, 200, user);
+            return super.convertToJson(res, 200, { user });
         } catch (error) {
             return super.handleError(res, error);
         }
@@ -50,8 +50,8 @@ class UserController extends BaseController {
     async deleteUser(req, res) {
         try {
             const id = req.params.id;
-            const success = await this.userService.deleteUser(id);
-            return super.convertToJson(res, 200, { success });
+            const deleted = await this.userService.deleteUser(id);
+            return super.convertToJson(res, 200, { deleted });
         } catch (error) {
             return super.handleError(res, error);
         }
@@ -61,7 +61,7 @@ class UserController extends BaseController {
         try {
             const email = req.params.email;
             const user = await this.userService.getUserByEmail(email);
-            return super.convertToJson(res, 200, user);
+            return super.convertToJson(res, 200, { user });
         } catch (error) {
             return super.handleError(res, error);
         }

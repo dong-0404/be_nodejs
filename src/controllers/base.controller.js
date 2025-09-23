@@ -15,27 +15,30 @@ class BaseController {
         });
     }
 
-    convertToJson(res, statusCode, data) {
-        return res.status(statusCode).json({
-            status: statusCode === 200 || statusCode === 201 ? 'success' : 'error',
+    // Simple success response
+    success(res, data = {}, message = 'Success') {
+        return res.status(200).json({
+            success: true,
+            message,
             data,
+        });
+    }
+
+    // Simple error response
+    error(res, error = {}, message = 'Error', status = 500) {
+        return res.status(status).json({
+            success: false,
+            message,
+            error,
         });
     }
 
     validate(req, res, next) {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
-                status: 'error',
-                errors: errors.array(),
-            });
+            return this.error(res, errors.array(), 'Validation error', 400);
         }
         next();
-    }
-
-    handleError(res, error) {
-        console.error(error); 
-        return this.convertToJson(res, 500, { message: error.message || 'Internal Server Error' });
     }
 }
 module.exports = BaseController;

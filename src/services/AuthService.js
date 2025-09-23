@@ -2,8 +2,9 @@ const { User } = require('../models');
 const authMiddleware = require('../middleware/auth.middleware');
 
 class AuthService {
-    constructor(userRepository) {
+    constructor(userRepository, orderRepository) {
         this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
     }
 
     // Register new user
@@ -87,7 +88,18 @@ class AuthService {
                 throw new Error('User not found');
             }
 
-            return user.toJSON();
+            const totalOrders = await this.orderRepository.countByUser(userId);
+            const deliveredSum = await this.orderRepository.sumByUser(userId, 'totalAmount', { status: 'delivered' });
+            const loyaltyPoints = Math.floor(Number(deliveredSum || 0) / 1000); // 1000 units = 1 point
+
+            // Membership levels by points
+            let membershipLevel = 'Bronze';
+            if (loyaltyPoints >= 2000) membershipLevel = 'Platinum';
+            else if (loyaltyPoints >= 1000) membershipLevel = 'Gold';
+            else if (loyaltyPoints >= 500) membershipLevel = 'Silver';
+
+            const plainUser = user.toJSON();
+            return { ...plainUser, totalOrders, loyaltyPoints, membershipLevel };
         } catch (error) {
             throw error;
         }

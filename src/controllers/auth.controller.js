@@ -32,10 +32,7 @@ class AuthController extends BaseController {
             // Validate input
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return this.convertToJson(res, 400, {
-                    message: 'Validation failed',
-                    errors: errors.array()
-                });
+                return this.error(res, errors.array(), 'Validation failed', 400);
             }
 
             // Sanitize input data
@@ -43,12 +40,9 @@ class AuthController extends BaseController {
 
             const result = await this.authService.register(sanitizedData);
 
-            return this.convertToJson(res, 201, {
-                message: 'User registered successfully',
-                ...result
-            });
+            return this.success(res, result, 'User registered successfully');
         } catch (error) {
-            return this.handleError(res, error);
+            return this.error(res, error, error.message, 400);
         }
     };
 
@@ -58,10 +52,7 @@ class AuthController extends BaseController {
             // Validate input
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return this.convertToJson(res, 400, {
-                    message: 'Validation failed',
-                    errors: errors.array()
-                });
+                return this.error(res, errors.array(), 'Validation failed', 400);
             }
 
             // Sanitize input data
@@ -69,12 +60,9 @@ class AuthController extends BaseController {
 
             const result = await this.authService.login(email, password);
 
-            return this.convertToJson(res, 200, {
-                message: 'Login successful',
-                ...result
-            });
+            return this.success(res, result, 'Login successfully');
         } catch (error) {
-            return this.handleError(res, error);
+            return this.error(res, error, error.message, 400);
         }
     };
 
@@ -84,12 +72,9 @@ class AuthController extends BaseController {
             const userId = req.user.id;
             const profile = await this.authService.getProfile(userId);
 
-            return this.convertToJson(res, 200, {
-                message: 'Profile retrieved successfully',
-                user: profile
-            });
+            return this.success(res, { user: profile }, 'Profile retrieved successfully');
         } catch (error) {
-            return this.handleError(res, error);
+            return this.error(res, error, error.message || 'Error', 400);
         }
     };
 
@@ -99,10 +84,7 @@ class AuthController extends BaseController {
             // Validate input
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return this.convertToJson(res, 400, {
-                    message: 'Validation failed',
-                    errors: errors.array()
-                });
+                return this.error(res, errors.array(), 'Validation failed', 400);
             }
 
             const userId = req.user.id;
@@ -116,14 +98,19 @@ class AuthController extends BaseController {
             delete sanitizedData.role;
             delete sanitizedData.id;
 
-            const updatedProfile = await this.authService.updateProfile(userId, sanitizedData);
+            await this.authService.updateProfile(userId, sanitizedData);
 
-            return this.convertToJson(res, 200, {
-                message: 'Profile updated successfully',
-                user: updatedProfile
-            });
+            // Re-fetch enriched profile to include totals/points
+            const profile = await this.authService.getProfile(userId);
+            const combinedUser = {
+                ...(profile.user || profile),
+                totalOrders: profile.totalOrders ?? 0,
+                loyaltyPoints: profile.loyaltyPoints ?? 0,
+            };
+
+            return this.success(res, { user: combinedUser }, 'Profile updated successfully');
         } catch (error) {
-            return this.handleError(res, error);
+            return this.error(res, error, error.message || 'Error', 400);
         }
     };
 
@@ -133,10 +120,7 @@ class AuthController extends BaseController {
             // Validate input
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return this.convertToJson(res, 400, {
-                    message: 'Validation failed',
-                    errors: errors.array()
-                });
+                return this.error(res, errors.array(), 'Validation failed', 400);
             }
 
             const userId = req.user.id;
@@ -144,9 +128,9 @@ class AuthController extends BaseController {
 
             const result = await this.authService.changePassword(userId, currentPassword, newPassword);
 
-            return this.convertToJson(res, 200, result);
+            return this.success(res, result, 'Password changed successfully');
         } catch (error) {
-            return this.handleError(res, error);
+            return this.error(res, error, error.message || 'Error', 400);
         }
     };
 
@@ -156,12 +140,9 @@ class AuthController extends BaseController {
             const userId = req.user.id;
             const result = await this.authService.refreshToken(userId);
 
-            return this.convertToJson(res, 200, {
-                message: 'Token refreshed successfully',
-                ...result
-            });
+            return this.success(res, result, 'Token refreshed successfully');
         } catch (error) {
-            return this.handleError(res, error);
+            return this.error(res, error, error.message || 'Error', 400);
         }
     };
 
@@ -170,11 +151,9 @@ class AuthController extends BaseController {
         try {
             // Since JWT is stateless, logout is handled client-side
             // In a more advanced setup, you might maintain a token blacklist
-            return this.convertToJson(res, 200, {
-                message: 'Logout successful'
-            });
+            return this.success(res, {}, 'Logout successful');
         } catch (error) {
-            return this.handleError(res, error);
+            return this.error(res, error, error.message || 'Error', 400);
         }
     };
 
@@ -184,9 +163,9 @@ class AuthController extends BaseController {
             const userId = req.user.id;
             const result = await this.authService.deactivateAccount(userId);
 
-            return this.convertToJson(res, 200, result);
+            return this.success(res, result, 'Account deactivated successfully');
         } catch (error) {
-            return this.handleError(res, error);
+            return this.error(res, error, error.message || 'Error', 400);
         }
     };
 
@@ -196,9 +175,9 @@ class AuthController extends BaseController {
             const { userId } = req.params;
             const result = await this.authService.reactivateAccount(userId);
 
-            return this.convertToJson(res, 200, result);
+            return this.success(res, result, 'Account reactivated successfully');
         } catch (error) {
-            return this.handleError(res, error);
+            return this.error(res, error, error.message || 'Error', 400);
         }
     };
 }

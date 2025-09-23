@@ -15,7 +15,7 @@ class FileController extends BaseController {
 
             const result = await fileService.uploadFile(req.file);
 
-            return super.convertToJson(res, 201, result);
+            return super.convertToJson(res, 201, { file: result });
         } catch (error) {
             return super.handleError(res, error);
         }
@@ -26,9 +26,9 @@ class FileController extends BaseController {
             const { bucket, fileName } = req.params;
             const fileUrl = await fileService.getFileUrl(bucket, fileName);
 
-            return super.convertToJson(res, 200, fileUrl);
+            return super.convertToJson(res, 200, { url: fileUrl });
         } catch (error) {
-            return super.handleError(res, error.message);
+            return super.handleError(res, error);
         }
     }
 
