@@ -7,13 +7,7 @@ module.exports = {
     database: process.env.MYSQL_DATABASE, 
     username: process.env.MYSQL_USER,     
     password: process.env.MYSQL_PASSWORD, 
-    dialect: 'mysql',
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
-    }
+    dialect: 'mysql'
   },
   "test": {
     "username": "root",
