@@ -2,7 +2,7 @@
  * Generic Repository Interface
  * Có thể dùng cho tất cả repositories (User, Product, Order, etc.)
  */
-class IRepository {
+class RepositoryInterface {
     /**
      * Lấy tất cả records
      * @returns {Promise<Array>} Danh sách records
@@ -66,4 +66,4 @@ class IRepository {
     }
 }
 
-module.exports = IRepository;
+module.exports = RepositoryInterface;

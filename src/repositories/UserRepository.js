@@ -1,6 +1,6 @@
-const IRepository = require('../interfaces/repository.interface');
+const RepositoryInterface = require('../interfaces/repository.interface');
 
-class UserRepository extends IRepository {
+class UserRepository extends RepositoryInterface {
     constructor(db) {
         super();
         this.db = db;

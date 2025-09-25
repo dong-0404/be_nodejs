@@ -2,7 +2,7 @@
  * Generic Service Interface
  * Có thể dùng cho tất cả services (User, Product, Order, etc.)
  */
-class IService {
+class ServiceInterface {
     /**
      * Lấy tất cả records
      * @returns {Promise<Array>} Danh sách records
@@ -58,4 +58,4 @@ class IService {
     }
 }
 
-module.exports = IService;
+module.exports = ServiceInterface;

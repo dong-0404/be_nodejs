@@ -1,6 +1,6 @@
-const IService = require('../interfaces/service.interface');
+const ServiceInterface = require('../interfaces/service.interface');
 
-class UserService extends IService {
+class UserService extends ServiceInterface {
     constructor(userRepository) {
         super();
         this.userRepository = userRepository;
