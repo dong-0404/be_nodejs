@@ -55,7 +55,9 @@ class ProductController extends BaseController {
             query('isHot').optional().isBoolean(),
             query('isNew').optional().isBoolean(),
             query('search').optional().isString(),
-            query('sortBy').optional().isIn(['name', 'createdAt', 'updatedAt']).withMessage('Invalid sort field'),
+            query('minPrice').optional().isFloat({ min: 0 }).withMessage('Min price must be a positive number'),
+            query('maxPrice').optional().isFloat({ min: 0 }).withMessage('Max price must be a positive number'),
+            query('sortBy').optional().isIn(['name', 'createdAt', 'updatedAt', 'price']).withMessage('Invalid sort field'),
             query('sortOrder').optional().isIn(['ASC', 'DESC']).withMessage('Sort order must be ASC or DESC')
         ];
     }

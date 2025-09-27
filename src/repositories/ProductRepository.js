@@ -221,18 +221,53 @@ class ProductRepository extends RepositoryInterface {
                 }
             ];
 
-            const { count, rows } = await this.Product.findAndCountAll({
-                where,
-                include,
-                order: [
+            // Handle special sorting cases
+            let orderClause;
+            if (sortBy === 'price') {
+                // For price sorting, we'll fetch all and sort in JavaScript
+                orderClause = [
+                    [{ model: this.ProductImage, as: 'images' }, 'sortOrder', 'ASC'],
+                    [{ model: this.ProductVariant, as: 'variants' }, 'id', 'ASC']
+                ];
+            } else {
+                // Sort by product fields
+                orderClause = [
                     [[sortBy, sortOrder]],
                     [{ model: this.ProductImage, as: 'images' }, 'sortOrder', 'ASC'],
                     [{ model: this.ProductVariant, as: 'variants' }, 'id', 'ASC']
-                ],
-                limit: parseInt(limit),
-                offset: parseInt(offset),
+                ];
+            }
+
+            let { count, rows } = await this.Product.findAndCountAll({
+                where,
+                include,
+                order: orderClause,
+                limit: sortBy === 'price' ? undefined : parseInt(limit), // No limit for price sorting
+                offset: sortBy === 'price' ? undefined : parseInt(offset), // No offset for price sorting
                 distinct: true
             });
+
+            // Handle price sorting in JavaScript if needed
+            if (sortBy === 'price') {
+                rows.sort((a, b) => {
+                    const getMaxPrice = (product) => {
+                        if (!product.variants || product.variants.length === 0) return 0;
+                        return Math.max(...product.variants.map(v => parseFloat(v.price) || 0));
+                    };
+                    
+                    const priceA = getMaxPrice(a);
+                    const priceB = getMaxPrice(b);
+                    
+                    return sortOrder === 'ASC' ? priceA - priceB : priceB - priceA;
+                });
+                
+                // Apply pagination after sorting
+                const startIndex = (parseInt(page) - 1) * parseInt(limit);
+                const endIndex = startIndex + parseInt(limit);
+                const totalCount = rows.length;
+                rows = rows.slice(startIndex, endIndex);
+                count = totalCount;
+            }
 
             return {
                 products: rows,
