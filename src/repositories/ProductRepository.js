@@ -65,7 +65,7 @@ class ProductRepository extends RepositoryInterface {
                     {
                         model: this.ProductVariant,
                         as: 'variants',
-                        attributes: ['id', 'name', 'sku', 'price', 'comparePrice', 'costPrice', 'stock', 'weight', 'dimensions', 'attributes']
+                        attributes: ['id', 'sku', 'color', 'size', 'price', 'originalPrice', 'stockQuantity', 'isActive']
                     },
                     {
                         model: this.Review,
@@ -117,7 +117,7 @@ class ProductRepository extends RepositoryInterface {
                     {
                         model: this.ProductVariant,
                         as: 'variants',
-                        attributes: ['id', 'name', 'sku', 'price', 'comparePrice', 'costPrice', 'stock', 'weight', 'dimensions', 'attributes']
+                        attributes: ['id', 'sku', 'color', 'size', 'price', 'originalPrice', 'stockQuantity', 'isActive']
                     },
                     {
                         model: this.Review,
@@ -196,16 +196,39 @@ class ProductRepository extends RepositoryInterface {
                 {
                     model: this.ProductImage,
                     as: 'images',
-                    attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary'],
-                    where: { isPrimary: true },
+                    attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary']
+                },
+                {
+                    model: this.ProductVariant,
+                    as: 'variants',
+                    attributes: ['id', 'sku', 'color', 'size', 'price', 'originalPrice', 'stockQuantity', 'isActive'],
+                    where: { isActive: true },
                     required: false
+                },
+                {
+                    model: this.Review,
+                    as: 'reviews',
+                    attributes: ['id', 'rating', 'title', 'comment', 'createdAt'],
+                    where: { isApproved: true },
+                    required: false,
+                    include: [
+                        {
+                            model: this.db.User,
+                            as: 'user',
+                            attributes: ['id', 'full_name']
+                        }
+                    ]
                 }
             ];
 
             const { count, rows } = await this.Product.findAndCountAll({
                 where,
                 include,
-                order: [[sortBy, sortOrder]],
+                order: [
+                    [[sortBy, sortOrder]],
+                    [{ model: this.ProductImage, as: 'images' }, 'sortOrder', 'ASC'],
+                    [{ model: this.ProductVariant, as: 'variants' }, 'id', 'ASC']
+                ],
                 limit: parseInt(limit),
                 offset: parseInt(offset),
                 distinct: true
