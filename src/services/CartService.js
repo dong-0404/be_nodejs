@@ -67,10 +67,10 @@ class CartService extends ServiceInterface {
     async addToCart(cartId, productVariantId, quantity = 1) {
         try {
             // Validate product variant exists and is active
-            const productVariant = await this.productRepository.db.ProductVariant.findByPk(productVariantId, {
+            const productVariant = await this.cartRepository.db.ProductVariant.findByPk(productVariantId, {
                 include: [
                     {
-                        model: this.productRepository.db.Product,
+                        model: this.cartRepository.db.Product,
                         as: 'product',
                         where: { isActive: true }
                     }
