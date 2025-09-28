@@ -66,7 +66,7 @@ class ProductRepository extends RepositoryInterface {
                     {
                         model: this.ProductVariant,
                         as: 'variants',
-                        attributes: ['id', 'name', 'sku', 'price', 'comparePrice', 'costPrice', 'stock', 'weight', 'dimensions', 'attributes']
+                        attributes: ['id', 'sku', 'color', 'size', 'price', 'originalPrice', 'stockQuantity', 'isActive']
                     },
                     {
                         model: this.Review,
@@ -75,7 +75,8 @@ class ProductRepository extends RepositoryInterface {
                         include: [
                             {
                                 model: this.User,
-                                attributes: ['id', 'firstName', 'lastName']
+                                as: 'user',
+                                attributes: ['id', 'full_name']
                             }
                         ]
                     }
@@ -117,7 +118,7 @@ class ProductRepository extends RepositoryInterface {
                     {
                         model: this.ProductVariant,
                         as: 'variants',
-                        attributes: ['id', 'name', 'sku', 'price', 'comparePrice', 'costPrice', 'stock', 'weight', 'dimensions', 'attributes']
+                        attributes: ['id', 'sku', 'color', 'size', 'price', 'originalPrice', 'stockQuantity', 'isActive']
                     },
                     {
                         model: this.Review,
@@ -126,7 +127,8 @@ class ProductRepository extends RepositoryInterface {
                         include: [
                             {
                                 model: this.User,
-                                attributes: ['id', 'firstName', 'lastName']
+                                as: 'user',
+                                attributes: ['id', 'full_name']
                             }
                         ]
                     }
@@ -195,20 +197,78 @@ class ProductRepository extends RepositoryInterface {
                 {
                     model: this.ProductImage,
                     as: 'images',
-                    attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary'],
-                    where: { isPrimary: true },
+                    attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary']
+                },
+                {
+                    model: this.ProductVariant,
+                    as: 'variants',
+                    attributes: ['id', 'sku', 'color', 'size', 'price', 'originalPrice', 'stockQuantity', 'isActive'],
+                    where: { isActive: true },
                     required: false
+                },
+                {
+                    model: this.Review,
+                    as: 'reviews',
+                    attributes: ['id', 'rating', 'title', 'comment', 'createdAt'],
+                    where: { isApproved: true },
+                    required: false,
+                    include: [
+                        {
+                            model: this.db.User,
+                            as: 'user',
+                            attributes: ['id', 'full_name']
+                        }
+                    ]
                 }
             ];
 
-            const { count, rows } = await this.Product.findAndCountAll({
+            // Handle special sorting cases
+            let orderClause;
+            if (sortBy === 'price') {
+                // For price sorting, we'll fetch all and sort in JavaScript
+                orderClause = [
+                    [{ model: this.ProductImage, as: 'images' }, 'sortOrder', 'ASC'],
+                    [{ model: this.ProductVariant, as: 'variants' }, 'id', 'ASC']
+                ];
+            } else {
+                // Sort by product fields
+                orderClause = [
+                    [[sortBy, sortOrder]],
+                    [{ model: this.ProductImage, as: 'images' }, 'sortOrder', 'ASC'],
+                    [{ model: this.ProductVariant, as: 'variants' }, 'id', 'ASC']
+                ];
+            }
+
+            let { count, rows } = await this.Product.findAndCountAll({
                 where,
                 include,
-                order: [[sortBy, sortOrder]],
-                limit: parseInt(limit),
-                offset: parseInt(offset),
+                order: orderClause,
+                limit: sortBy === 'price' ? undefined : parseInt(limit), // No limit for price sorting
+                offset: sortBy === 'price' ? undefined : parseInt(offset), // No offset for price sorting
                 distinct: true
             });
+
+            // Handle price sorting in JavaScript if needed
+            if (sortBy === 'price') {
+                rows.sort((a, b) => {
+                    const getMaxPrice = (product) => {
+                        if (!product.variants || product.variants.length === 0) return 0;
+                        return Math.max(...product.variants.map(v => parseFloat(v.price) || 0));
+                    };
+                    
+                    const priceA = getMaxPrice(a);
+                    const priceB = getMaxPrice(b);
+                    
+                    return sortOrder === 'ASC' ? priceA - priceB : priceB - priceA;
+                });
+                
+                // Apply pagination after sorting
+                const startIndex = (parseInt(page) - 1) * parseInt(limit);
+                const endIndex = startIndex + parseInt(limit);
+                const totalCount = rows.length;
+                rows = rows.slice(startIndex, endIndex);
+                count = totalCount;
+            }
 
             return {
                 products: rows,
@@ -264,12 +324,35 @@ class ProductRepository extends RepositoryInterface {
                     {
                         model: this.ProductImage,
                         as: 'images',
-                        attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary'],
-                        where: { isPrimary: true },
+                        attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary']
+                    },
+                    {
+                        model: this.ProductVariant,
+                        as: 'variants',
+                        attributes: ['id', 'sku', 'color', 'size', 'price', 'originalPrice', 'stockQuantity', 'isActive'],
+                        where: { isActive: true },
                         required: false
+                    },
+                    {
+                        model: this.Review,
+                        as: 'reviews',
+                        attributes: ['id', 'rating', 'title', 'comment', 'createdAt'],
+                        where: { isApproved: true },
+                        required: false,
+                        include: [
+                            {
+                                model: this.db.User,
+                                as: 'user',
+                                attributes: ['id', 'full_name']
+                            }
+                        ]
                     }
                 ],
-                order: [['createdAt', 'DESC']],
+                order: [
+                    ['createdAt', 'DESC'],
+                    [{ model: this.ProductImage, as: 'images' }, 'sortOrder', 'ASC'],
+                    [{ model: this.ProductVariant, as: 'variants' }, 'id', 'ASC']
+                ],
                 limit
             });
             return products;
@@ -298,12 +381,35 @@ class ProductRepository extends RepositoryInterface {
                     {
                         model: this.ProductImage,
                         as: 'images',
-                        attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary'],
-                        where: { isPrimary: true },
+                        attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary']
+                    },
+                    {
+                        model: this.ProductVariant,
+                        as: 'variants',
+                        attributes: ['id', 'sku', 'color', 'size', 'price', 'originalPrice', 'stockQuantity', 'isActive'],
+                        where: { isActive: true },
                         required: false
+                    },
+                    {
+                        model: this.Review,
+                        as: 'reviews',
+                        attributes: ['id', 'rating', 'title', 'comment', 'createdAt'],
+                        where: { isApproved: true },
+                        required: false,
+                        include: [
+                            {
+                                model: this.db.User,
+                                as: 'user',
+                                attributes: ['id', 'full_name']
+                            }
+                        ]
                     }
                 ],
-                order: [['createdAt', 'DESC']],
+                order: [
+                    ['createdAt', 'DESC'],
+                    [{ model: this.ProductImage, as: 'images' }, 'sortOrder', 'ASC'],
+                    [{ model: this.ProductVariant, as: 'variants' }, 'id', 'ASC']
+                ],
                 limit
             });
             return products;
@@ -332,12 +438,35 @@ class ProductRepository extends RepositoryInterface {
                     {
                         model: this.ProductImage,
                         as: 'images',
-                        attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary'],
-                        where: { isPrimary: true },
+                        attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary']
+                    },
+                    {
+                        model: this.ProductVariant,
+                        as: 'variants',
+                        attributes: ['id', 'sku', 'color', 'size', 'price', 'originalPrice', 'stockQuantity', 'isActive'],
+                        where: { isActive: true },
                         required: false
+                    },
+                    {
+                        model: this.Review,
+                        as: 'reviews',
+                        attributes: ['id', 'rating', 'title', 'comment', 'createdAt'],
+                        where: { isApproved: true },
+                        required: false,
+                        include: [
+                            {
+                                model: this.db.User,
+                                as: 'user',
+                                attributes: ['id', 'full_name']
+                            }
+                        ]
                     }
                 ],
-                order: [['createdAt', 'DESC']],
+                order: [
+                    ['createdAt', 'DESC'],
+                    [{ model: this.ProductImage, as: 'images' }, 'sortOrder', 'ASC'],
+                    [{ model: this.ProductVariant, as: 'variants' }, 'id', 'ASC']
+                ],
                 limit
             });
             return products;
