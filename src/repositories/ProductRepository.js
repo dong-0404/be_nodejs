@@ -11,6 +11,7 @@ class ProductRepository extends RepositoryInterface {
         this.ProductImage = db.ProductImage;
         this.ProductVariant = db.ProductVariant;
         this.Review = db.Review;
+        this.User = db.User;
         this.model = db.Product; // For interface compatibility
     }
 
@@ -73,7 +74,7 @@ class ProductRepository extends RepositoryInterface {
                         attributes: ['id', 'rating', 'title', 'comment', 'createdAt'],
                         include: [
                             {
-                                model: this.db.User,
+                                model: this.User,
                                 as: 'user',
                                 attributes: ['id', 'full_name']
                             }
@@ -125,7 +126,7 @@ class ProductRepository extends RepositoryInterface {
                         attributes: ['id', 'rating', 'title', 'comment', 'createdAt'],
                         include: [
                             {
-                                model: this.db.User,
+                                model: this.User,
                                 as: 'user',
                                 attributes: ['id', 'full_name']
                             }

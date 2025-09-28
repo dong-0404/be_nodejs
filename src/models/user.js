@@ -62,11 +62,11 @@ module.exports = (sequelize, DataTypes) => {
         as: 'notifications'
       });
 
-      // User has many cart items
-      User.hasMany(models.CartItem, {
-        foreignKey: 'userId',
-        as: 'cartItems'
-      });
+      // User has many cart items through carts
+      // User.hasMany(models.CartItem, {
+      //   foreignKey: 'userId',
+      //   as: 'cartItems'
+      // });
     }
 
     // Instance methods
