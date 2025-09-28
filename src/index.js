@@ -5,6 +5,7 @@ const authRouter = require('./routes/auth.routes');
 const fileRouter = require('./routes/file.routes');
 const productRouter = require('./routes/product.routes');
 const productImageRouter = require('./routes/productImage.routes');
+const cartRouter = require('./routes/cart.routes');
 const scheduleTelegramJob = require('./schedulers/telegram.scheduler');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,6 +20,7 @@ app.use('/api', userRouter);
 app.use('/api/file', fileRouter);
 app.use('/api', productRouter);
 app.use('/api', productImageRouter);
+app.use('/api', cartRouter);
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
