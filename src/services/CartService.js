@@ -67,10 +67,10 @@ class CartService extends ServiceInterface {
     async addToCart(cartId, productVariantId, quantity = 1) {
         try {
             // Validate product variant exists and is active
-            const productVariant = await this.cartRepository.db.ProductVariant.findByPk(productVariantId, {
+            const productVariant = await this.productRepository.ProductVariant.findByPk(productVariantId, {
                 include: [
                     {
-                        model: this.cartRepository.db.Product,
+                        model: this.productRepository.Product,
                         as: 'product',
                         where: { isActive: true }
                     }
@@ -111,10 +111,10 @@ class CartService extends ServiceInterface {
                 throw new Error('Quantity cannot be negative');
             }
 
-            const cartItem = await this.cartRepository.db.CartItem.findByPk(cartItemId, {
+            const cartItem = await this.cartRepository.CartItem.findByPk(cartItemId, {
                 include: [
                     {
-                        model: this.cartRepository.db.ProductVariant,
+                        model: this.cartRepository.ProductVariant,
                         as: 'productVariant'
                     }
                 ]
@@ -147,7 +147,7 @@ class CartService extends ServiceInterface {
     // Remove item from cart
     async removeFromCart(cartItemId) {
         try {
-            const cartItem = await this.cartRepository.db.CartItem.findByPk(cartItemId);
+            const cartItem = await this.cartRepository.CartItem.findByPk(cartItemId);
             if (!cartItem) {
                 throw new Error('Cart item not found');
             }
@@ -266,7 +266,7 @@ class CartService extends ServiceInterface {
             for (const item of cart.items) {
                 const currentPrice = item.productVariant.price;
                 if (currentPrice !== item.priceAtAdd) {
-                    await this.cartRepository.db.CartItem.update(
+                    await this.cartRepository.CartItem.update(
                         { priceAtAdd: currentPrice },
                         { where: { id: item.id } }
                     );

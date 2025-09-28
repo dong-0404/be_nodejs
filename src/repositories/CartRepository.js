@@ -43,24 +43,24 @@ class CartRepository extends RepositoryInterface {
             const cart = await this.Cart.findByPk(id, {
                 include: [
                     {
-                        model: this.db.CartItem,
+                        model: this.CartItem,
                         as: 'items',
                         include: [
                             {
-                                model: this.db.ProductVariant,
+                                model: this.ProductVariant,
                                 as: 'productVariant',
                                 include: [
                                     {
-                                        model: this.db.Product,
+                                        model: this.Product,
                                         as: 'product',
                                         include: [
                                             {
-                                                model: this.db.Brand,
+                                                model: this.Brand,
                                                 as: 'brand',
                                                 attributes: ['id', 'name', 'slug']
                                             },
                                             {
-                                                model: this.db.ProductImage,
+                                                model: this.ProductImage,
                                                 as: 'images',
                                                 attributes: ['id', 'imageUrl', 'altText', 'isPrimary'],
                                                 where: { isPrimary: true },
@@ -90,24 +90,24 @@ class CartRepository extends RepositoryInterface {
                 },
                 include: [
                     {
-                        model: this.db.CartItem,
+                        model: this.CartItem,
                         as: 'items',
                         include: [
                             {
-                                model: this.db.ProductVariant,
+                                model: this.ProductVariant,
                                 as: 'productVariant',
                                 include: [
                                     {
-                                        model: this.db.Product,
+                                        model: this.Product,
                                         as: 'product',
                                         include: [
                                             {
-                                                model: this.db.Brand,
+                                                model: this.Brand,
                                                 as: 'brand',
                                                 attributes: ['id', 'name', 'slug']
                                             },
                                             {
-                                                model: this.db.ProductImage,
+                                                model: this.ProductImage,
                                                 as: 'images',
                                                 attributes: ['id', 'imageUrl', 'altText', 'isPrimary'],
                                                 where: { isPrimary: true },
@@ -137,24 +137,24 @@ class CartRepository extends RepositoryInterface {
                 },
                 include: [
                     {
-                        model: this.db.CartItem,
+                        model: this.CartItem,
                         as: 'items',
                         include: [
                             {
-                                model: this.db.ProductVariant,
+                                model: this.ProductVariant,
                                 as: 'productVariant',
                                 include: [
                                     {
-                                        model: this.db.Product,
+                                        model: this.Product,
                                         as: 'product',
                                         include: [
                                             {
-                                                model: this.db.Brand,
+                                                model: this.Brand,
                                                 as: 'brand',
                                                 attributes: ['id', 'name', 'slug']
                                             },
                                             {
-                                                model: this.db.ProductImage,
+                                                model: this.ProductImage,
                                                 as: 'images',
                                                 attributes: ['id', 'imageUrl', 'altText', 'isPrimary'],
                                                 where: { isPrimary: true },
@@ -214,7 +214,7 @@ class CartRepository extends RepositoryInterface {
     async addItem(cartId, productVariantId, quantity, priceAtAdd) {
         try {
             // Check if item already exists in cart
-            const existingItem = await this.db.CartItem.findOne({
+            const existingItem = await this.CartItem.findOne({
                 where: {
                     cartId: cartId,
                     productVariantId: productVariantId
@@ -228,7 +228,7 @@ class CartRepository extends RepositoryInterface {
                 return existingItem;
             } else {
                 // Create new item
-                const cartItem = await this.db.CartItem.create({
+                const cartItem = await this.CartItem.create({
                     cartId: cartId,
                     productVariantId: productVariantId,
                     quantity: quantity,
@@ -248,7 +248,7 @@ class CartRepository extends RepositoryInterface {
                 return await this.removeItem(cartItemId);
             }
 
-            const cartItem = await this.db.CartItem.findByPk(cartItemId);
+            const cartItem = await this.CartItem.findByPk(cartItemId);
             if (!cartItem) {
                 throw new Error('Cart item not found');
             }
@@ -264,7 +264,7 @@ class CartRepository extends RepositoryInterface {
     // Remove item from cart
     async removeItem(cartItemId) {
         try {
-            const deleted = await this.db.CartItem.destroy({
+            const deleted = await this.CartItem.destroy({
                 where: { id: cartItemId }
             });
             return deleted > 0;
@@ -276,7 +276,7 @@ class CartRepository extends RepositoryInterface {
     // Clear all items from cart
     async clearCart(cartId) {
         try {
-            const deleted = await this.db.CartItem.destroy({
+            const deleted = await this.CartItem.destroy({
                 where: { cartId: cartId }
             });
             return deleted;
@@ -288,7 +288,7 @@ class CartRepository extends RepositoryInterface {
     // Update cart
     async update(id, updateData) {
         try {
-            await this.db.Cart.update(updateData, { where: { id } });
+            await this.Cart.update(updateData, { where: { id } });
             return await this.findById(id);
         } catch (error) {
             throw new Error(`Failed to update cart: ${error.message}`);
@@ -357,7 +357,7 @@ class CartRepository extends RepositoryInterface {
                 return await this.findById(userCart.id);
             } else {
                 // Transfer guest cart to user
-                await this.db.Cart.update(
+                await this.Cart.update(
                     { userId: userId, sessionId: null },
                     { where: { id: guestCart.id } }
                 );
@@ -391,19 +391,19 @@ class CartRepository extends RepositoryInterface {
                 where,
                 include: [
                     {
-                        model: this.db.CartItem,
+                        model: this.CartItem,
                         as: 'items',
                         include: [
                             {
-                                model: this.db.ProductVariant,
+                                model: this.ProductVariant,
                                 as: 'productVariant',
                                 include: [
                                     {
-                                        model: this.db.Product,
+                                        model: this.Product,
                                         as: 'product',
                                         include: [
                                             {
-                                                model: this.db.Brand,
+                                                model: this.Brand,
                                                 as: 'brand',
                                                 attributes: ['id', 'name', 'slug']
                                             }

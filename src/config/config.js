@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '/Users/shin/Documents/DemoProject/be_app/.env' });
+require('dotenv').config();
 
 module.exports = {
   "development": {
@@ -8,7 +8,7 @@ module.exports = {
     username: process.env.MYSQL_USER,     
     password: process.env.MYSQL_PASSWORD, 
     dialect: 'mysql',
-    logging: false  // Tắt SQL query logging
+    logging: false  
   },
   "test": {
     "username": "root",
