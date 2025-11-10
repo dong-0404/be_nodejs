@@ -13,9 +13,8 @@ const sendMessage = async (message) => {
             chat_id: CHAT_ID,
             text: message,
         });
-        console.log('Message sent:', response.data);
     } catch (error) {
-        console.error('Error sending message:', error.message);
+        // Error sending message
     }
 };
 

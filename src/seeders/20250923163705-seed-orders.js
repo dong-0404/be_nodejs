@@ -3,8 +3,16 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    const [users] = await queryInterface.sequelize.query(`SELECT id FROM Users ORDER BY id ASC LIMIT 1`);
-    const userId = users?.[0]?.id;
+    const [preferredUser] = await queryInterface.sequelize.query(
+      `SELECT id FROM Users WHERE email = 'customer@test.com' LIMIT 1`
+    );
+    let userId = preferredUser?.[0]?.id;
+    if (!userId) {
+      const [fallback] = await queryInterface.sequelize.query(
+        `SELECT id FROM Users ORDER BY id ASC LIMIT 1`
+      );
+      userId = fallback?.[0]?.id;
+    }
     if (!userId) return;
 
     const now = new Date();

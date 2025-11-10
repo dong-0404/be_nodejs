@@ -191,7 +191,8 @@ class ProductRepository extends RepositoryInterface {
                     as: 'categories',
                     attributes: ['id', 'name', 'slug'],
                     through: { attributes: [] },
-                    ...(categoryId ? [{ where: { id: categoryId } }] : [])
+                    required: !!categoryId,
+                    ...(categoryId ? { where: { id: categoryId } } : {})
                 },
                 {
                     model: this.ProductImage,
@@ -497,13 +498,21 @@ class ProductRepository extends RepositoryInterface {
                 brandId,
                 isActive = true,
                 sortBy = 'createdAt',
-                sortOrder = 'DESC'
+                sortOrder = 'DESC',
+                search
             } = options;
 
             const offset = (page - 1) * limit;
             const where = { isActive };
 
             if (brandId) where.brandId = brandId;
+            if (search) {
+                where[Op.or] = [
+                    { name: { [Op.iLike]: `%${search}%` } },
+                    { description: { [Op.iLike]: `%${search}%` } },
+                    { shortDescription: { [Op.iLike]: `%${search}%` } }
+                ];
+            }
 
             const include = [
                 {
@@ -524,17 +533,79 @@ class ProductRepository extends RepositoryInterface {
                     attributes: ['id', 'imageUrl', 'altText', 'sortOrder', 'isPrimary'],
                     where: { isPrimary: true },
                     required: false
+                },
+                {
+                    model: this.ProductVariant,
+                    as: 'variants',
+                    attributes: ['id', 'sku', 'color', 'size', 'price', 'originalPrice', 'stockQuantity', 'isActive'],
+                    required: false
                 }
             ];
 
-            const { count, rows } = await this.Product.findAndCountAll({
+            // Handle special sorting cases
+            let orderClause;
+            if (sortBy === 'price') {
+                // For price sorting, we'll fetch all and sort in JavaScript
+                orderClause = [
+                    [{ model: this.ProductImage, as: 'images' }, 'sortOrder', 'ASC'],
+                    [{ model: this.ProductVariant, as: 'variants' }, 'id', 'ASC']
+                ];
+            } else {
+                // Sort by product fields
+                orderClause = [
+                    [[sortBy, sortOrder]],
+                    [{ model: this.ProductImage, as: 'images' }, 'sortOrder', 'ASC'],
+                    [{ model: this.ProductVariant, as: 'variants' }, 'id', 'ASC']
+                ];
+            }
+
+            let { count, rows } = await this.Product.findAndCountAll({
                 where,
                 include,
-                order: [[sortBy, sortOrder]],
-                limit: parseInt(limit),
-                offset: parseInt(offset),
+                order: orderClause,
+                limit: sortBy === 'price' ? undefined : parseInt(limit), // No limit for price sorting
+                offset: sortBy === 'price' ? undefined : parseInt(offset), // No offset for price sorting
                 distinct: true
             });
+
+            // Handle price sorting in JavaScript if needed
+            if (sortBy === 'price') {
+                // Sort by minimum price from variants
+                rows = rows.map(product => {
+                    const productJSON = product.toJSON ? product.toJSON() : product;
+                    const variants = productJSON.variants || [];
+                    const prices = variants
+                        .filter(v => v.isActive)
+                        .map(v => parseFloat(v.price) || 0);
+                    productJSON._minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+                    return productJSON;
+                });
+
+                // Sort by price
+                rows.sort((a, b) => {
+                    if (sortOrder === 'ASC') {
+                        return a._minPrice - b._minPrice;
+                    } else {
+                        return b._minPrice - a._minPrice;
+                    }
+                });
+
+                // Apply pagination after sorting
+                const total = rows.length;
+                const startIndex = parseInt(offset);
+                const endIndex = startIndex + parseInt(limit);
+                rows = rows.slice(startIndex, endIndex);
+
+                return {
+                    products: rows,
+                    pagination: {
+                        total: total,
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        totalPages: Math.ceil(total / limit)
+                    }
+                };
+            }
 
             return {
                 products: rows,
@@ -565,19 +636,27 @@ class ProductRepository extends RepositoryInterface {
             const offset = (page - 1) * limit;
             const where = { brandId, isActive };
 
+            const categoryInclude = {
+                model: this.Category,
+                as: 'categories',
+                attributes: ['id', 'name', 'slug'],
+                through: { attributes: [] },
+                required: false
+            };
+
+            // Add where clause if categoryId is provided
+            if (categoryId) {
+                categoryInclude.where = { id: parseInt(categoryId) };
+            }
+
             const include = [
                 {
                     model: this.Brand,
                     as: 'brand',
-                    attributes: ['id', 'name', 'slug', 'logoUrl']
+                    attributes: ['id', 'name', 'slug', 'logoUrl'],
+                    required: false
                 },
-                {
-                    model: this.Category,
-                    as: 'categories',
-                    attributes: ['id', 'name', 'slug'],
-                    through: { attributes: [] },
-                    ...(categoryId ? [{ where: { id: categoryId } }] : [])
-                },
+                categoryInclude,
                 {
                     model: this.ProductImage,
                     as: 'images',

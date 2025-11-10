@@ -31,7 +31,7 @@ module.exports = {
         postalCode: '700000',
         country: 'Vietnam',
         isDefault: false,
-        type: 'work',
+        type: 'office',
         createdAt: new Date(),
         updatedAt: new Date(),
       },

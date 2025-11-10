@@ -109,10 +109,8 @@ class FileService {
                 resource_type: resourceType
             });
             
-            console.log(`✅ File deleted from Cloudinary: ${publicId}`);
             return result.result === 'ok';
         } catch (error) {
-            console.error('Delete file error:', error);
             throw new Error(`Delete file failed: ${error.message}`);
         }
     }
@@ -235,10 +233,8 @@ class FileService {
     async testConnection() {
         try {
             await cloudinary.api.ping();
-            console.log('✅ Cloudinary connection successful');
             return true;
         } catch (error) {
-            console.error('❌ Cloudinary connection failed:', error.message);
             return false;
         }
     }

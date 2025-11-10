@@ -7,12 +7,20 @@ class BaseController {
     }
 
     autoBind() {
-        const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this))
-            .filter(name => name !== 'constructor' && typeof this[name] === 'function');
-        
-        methods.forEach(method => {
-            this[method] = this[method].bind(this);
-        });
+        let proto = this;
+        const bound = new Set();
+
+        while (proto && proto !== Object.prototype) {
+            Object.getOwnPropertyNames(proto)
+                .filter(name => name !== 'constructor' && typeof this[name] === 'function')
+                .forEach(method => {
+                    if (!bound.has(method)) {
+                        this[method] = this[method].bind(this);
+                        bound.add(method);
+                    }
+                });
+            proto = Object.getPrototypeOf(proto);
+        }
     }
 
     // Simple success response

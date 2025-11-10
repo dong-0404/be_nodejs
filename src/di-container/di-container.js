@@ -4,9 +4,20 @@ const OrderRepository = require('../repositories/OrderRepository');
 const ProductRepository = require('../repositories/ProductRepository');
 const CategoryRepository = require('../repositories/CategoryRepository');
 const BrandRepository = require('../repositories/BrandRepository');
+const CartRepository = require('../repositories/CartRepository');
+const WishlistRepository = require('../repositories/WishlistRepository');
+const AddressRepository = require('../repositories/AddressRepository');
+const PaymentMethodRepository = require('../repositories/PaymentMethodRepository');
+const ReviewRepository = require('../repositories/ReviewRepository');
 const UserService = require('../services/UserService');
 const AuthService = require('../services/AuthService');
 const ProductService = require('../services/ProductService');
+const CartService = require('../services/CartService');
+const WishlistService = require('../services/WishlistService');
+const OrderService = require('../services/OrderService');
+const AddressService = require('../services/AddressService');
+const PaymentMethodService = require('../services/PaymentMethodService');
+const ReviewService = require('../services/ReviewService');
 
 class DIContainer {
     constructor() {
@@ -44,12 +55,41 @@ container.register('orderRepository', (container) => new OrderRepository(contain
 container.register('productRepository', (container) => new ProductRepository(container.resolve('db')));
 container.register('categoryRepository', (container) => new CategoryRepository(container.resolve('db')));
 container.register('brandRepository', (container) => new BrandRepository(container.resolve('db')));
+container.register('cartRepository', (container) => new CartRepository(container.resolve('db')));
+container.register('wishlistRepository', (container) => new WishlistRepository(container.resolve('db')));
+container.register('addressRepository', (container) => new AddressRepository(container.resolve('db')));
+container.register('paymentMethodRepository', (container) => new PaymentMethodRepository(container.resolve('db')));
+container.register('reviewRepository', (container) => new ReviewRepository(container.resolve('db')));
 container.register('userService', (container) => new UserService(container.resolve('userRepository')));
 container.register('authService', (container) => new AuthService(container.resolve('userRepository'), container.resolve('orderRepository')));
 container.register('productService', (container) => new ProductService(
     container.resolve('productRepository'),
     container.resolve('categoryRepository'),
     container.resolve('brandRepository')
+));
+container.register('cartService', (container) => new CartService(
+    container.resolve('cartRepository'),
+    container.resolve('productRepository')
+));
+container.register('wishlistService', (container) => new WishlistService(
+    container.resolve('wishlistRepository'),
+    container.resolve('productRepository')
+));
+container.register('orderService', (container) => new OrderService(
+    container.resolve('orderRepository'),
+    container.resolve('cartRepository'),
+    container.resolve('productRepository'),
+    container.resolve('addressRepository')
+));
+container.register('addressService', (container) => new AddressService(
+    container.resolve('addressRepository')
+));
+container.register('paymentMethodService', (container) => new PaymentMethodService(
+    container.resolve('paymentMethodRepository')
+));
+container.register('reviewService', (container) => new ReviewService(
+    container.resolve('reviewRepository'),
+    container.resolve('productRepository')
 ));
 
 module.exports = container;

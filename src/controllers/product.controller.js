@@ -198,6 +198,7 @@ class ProductController extends BaseController {
                 limit: parseInt(req.query.limit) || 20,
                 brandId: req.query.brandId,
                 isActive: req.query.isActive !== undefined ? req.query.isActive === 'true' : undefined,
+                search: req.query.search,
                 sortBy: req.query.sortBy || 'createdAt',
                 sortOrder: req.query.sortOrder || 'DESC'
             };

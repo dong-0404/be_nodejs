@@ -195,9 +195,7 @@ class ProductImageController extends BaseController {
                 const fullPublicId = `ecommerce/${folder}/${publicId}`;
                 
                 await fileService.deleteFile(fullPublicId);
-                console.log(`✅ Deleted image from Cloudinary: ${fullPublicId}`);
             } catch (deleteError) {
-                console.error('Failed to delete from Cloudinary:', deleteError.message);
                 // Continue with database deletion even if Cloudinary deletion fails
             }
 
